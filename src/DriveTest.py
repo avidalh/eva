@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import matplotlib.pyplot as plt
-import datetime
+import time
 import csv
 from CoordConv import CoordTranslator
 import math
@@ -98,24 +98,50 @@ def readFile(fileName):
     return trackList, trackIndices                    
 
 
-def latLon2local(coords, smr=True):
-    # smr_latlon = [28.477493, -16.332522]
-    # mlat_latlon = [28.482653, -16.341537]
-    # Kx = 0.9999
-    # Ky = 0.9998
-    # theta = -0.6488 * 2 * math.pi / 360
+def latLon2local(coords, sensor='mlat'):
+
+    smr_latlon = [28.477496, -16.332520]
+    smr_height = 704.015  #helipsoid wgs84
+    smr_kx = 1.00075
+    smr_ky = .997
+    smr_theta = .58
+    smr_UTM = [369558.861, 3150822.214]
+    
+    mlat_latlon = [28.482653, -16.341537] 
+    mlat_height = 677.969 
+    mlat_kx = 1.0003#7  # 0.9999
+    mlat_ky = 1.0023 #.995
+    mlat_theta = 0.677  #0.685
+    mlat_UTM = [368682.455, 3151403.490]
+
+    sensorsLocations = {'smr': {'latLon': smr_latlon,
+                                'height': smr_height,
+                                'kx': smr_kx,
+                                'ky': smr_ky,
+                                'theta': smr_theta,
+                                'UTM': smr_UTM},
+                        'mlat': {'latLon': mlat_latlon,
+                                 'height': mlat_height,
+                                 'kx': mlat_kx,
+                                 'ky': mlat_ky,
+                                 'theta':mlat_theta,
+                                 'UTM': mlat_UTM}
+                        }
+
+    theta = sensorsLocations[sensor]['theta'] * math.pi / 180
+    sensorXY = sensorsLocations[sensor]['UTM']  # coordTrans.LLtoUTM(smr_latlon)[2:]
+    
     coordTrans = CoordTranslator()
-    # smr_xy = coordTrans.LLtoUTM(smr_latlon)[2:]
-    # temp1 = smr_xy[0] * math.cos(theta) - smr_xy[1] * math.sin(theta)
-    # temp2 = smr_xy[0] * math.sin(theta) + smr_xy[1] * math.cos(theta)
-    # smr_xy = [temp1 * Kx, temp2 * Ky]
-
+    Kx = sensorsLocations[sensor]['kx']
+    Ky = sensorsLocations[sensor]['ky']
     pointXY = coordTrans.LLtoUTM(coords)[2:]
-    # temp1 = pointXY[0] * math.cos(theta) - pointXY[1] * math.sin(theta)
-    # temp2 = pointXY[0] * math.sin(theta) + pointXY[1] * math.cos(theta)
+    pointXY = [pointCoord - sensorCoord for pointCoord, sensorCoord in zip(pointXY, sensorXY)]
+    temp1 = pointXY[0] * math.cos(theta) - pointXY[1] * math.sin(theta)
+    temp2 = pointXY[0] * math.sin(theta) + pointXY[1] * math.cos(theta)
+    temp1 *= Kx
+    temp2 *= Ky
 
-    # print([temp1 * Kx - smr_xy[0], temp2 * Ky - smr_xy[1]])
-    return pointXY    
+    return [temp1, temp2]
 
 
 def calcStats(trackList, trackIndices, trackListBig, maxSize):
@@ -241,7 +267,7 @@ def plotTrackListXY_calc(trackList):
         plt.plot(trackList[i]['data']['X_UTM'],
                  trackList[i]['data']['Y_UTM'],
                  marker='^',
-                 mfc='None',
+                 mfc='r',
                  ms=3,
                  mec='b',
                  linestyle='-',
@@ -458,7 +484,7 @@ def main():
     asterixDecodedFile =  '/home/avidalh/Desktop/GNSS/DriveTests/SMR/20200129/200129-gcxo-230611.gps.json'
     asterixDecodedFile =  'recordings/200129-gcxo-230614.gps_mike6.json'
     #asterixDecodedFile =  '/home/avidalh/Desktop/GNSS/DriveTests/SMR/20200130/200130-gcxo-223713.gps.json'
-    #asterixDecodedFile =  'recordings/200130-gcxo-223713.gps.json'
+    # asterixDecodedFile =  'recordings/200130-gcxo-223713.gps.json'
     # asterixDecodedFile =  'recordings/080001.gps.json'
     
     DGPStrackFile = 'recordings/20200129.cst'
@@ -492,7 +518,7 @@ def main():
         r'$PD: %.2f$' % ((totalPlots-totalMissed)/totalPlots*100)
     ))
 
-    plotTrackListLatLon(trackList)
+    # plotTrackListLatLon(trackList)
     plotTrackList(trackList)
     plotTrackListXY_calc(trackList)
     plotTrackDGPS(trackDGPS, UTM=True)
@@ -508,8 +534,11 @@ def main():
     # plt.xlim([-2700, 1000])
     plt.autoscale(enable=False)
 
+    print("--- %s seconds ---" % (time.time() - start_time))
+
     plt.show()
 
 
 if __name__ == '__main__':
+    start_time = time.time()
     main()
