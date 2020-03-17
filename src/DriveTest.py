@@ -491,7 +491,8 @@ def objectCorrelator(trackList, trackDGPS):
         # for points in trackDGPS:
         for timeStampt, X, Y in zip(trackDGPS[0]['data']['ToD'], trackDGPS[0]['data']['X_Local'], trackDGPS[0]['data']['Y_Local']):
             if abs(track['data']['ToD'][0] - timeStampt) < maxTimeOffset:
-                if (abs(track['data']['X_Local'][0]-X) < maxSeparation) and (abs(track['data']['Y_Local'][0]-Y) < maxSeparation):
+                if (abs(track['data']['X_Local'][5]-X) < maxSeparation) and \
+                    (abs(track['data']['Y_Local'][5]-Y) < maxSeparation):
                     indexPoint = trackDGPS[0]['data']['ToD'].index(timeStampt)
                     sizeArray = len(track['data']['ToD'])
                     track['data']['ToDDGPS'] = trackDGPS[0]['data']['ToD'][indexPoint:indexPoint+sizeArray]
