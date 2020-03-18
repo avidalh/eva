@@ -479,7 +479,7 @@ def readDGPSfile(fileName):
             }]
 
 
-def objectCorrelator(trackList, trackDGPS):
+def objectCorrelator(trackList, tracksDGPS):
     '''
     correlates plots and DGPS points.
 
@@ -487,28 +487,35 @@ def objectCorrelator(trackList, trackDGPS):
     maxTimeOffset = 0.5
     maxSeparation = 100
     trackListOutput = []
-    for track in trackList:
+
+    for trackDGPS in tracksDGPS:
+        for track in trackList:
+            for i in range(len(trackDGPS['data']['ToD'])):
+                for j in range(len(track['data']['ToD'])):
+                    if abs(trackDGPS['data']['ToD'][i] - track['data']['ToD'][j]) < maxTimeOffset:
+                        print()
+
         # for points in trackDGPS:
-        len_X = int(len(track['data']['X_Local'])/2)
-        if len_X < 2:
-            break
-        for timeStampt, X, Y in zip(trackDGPS[0]['data']['ToD'], trackDGPS[0]['data']['X_Local'], trackDGPS[0]['data']['Y_Local']):
+        # len_X = int(len(track['data']['X_Local'])/2)
+        # if len_X < 2:
+        #     break
+        # for timeStampt, X, Y in zip(trackDGPS[0]['data']['ToD'], trackDGPS[0]['data']['X_Local'], trackDGPS[0]['data']['Y_Local']):
             
-            if abs(track['data']['ToD'][0] - timeStampt) < maxTimeOffset:
-                if True:  #(abs(track['data']['X_Local'][len_X] - X) < maxSeparation) and \
-                    #(abs(track['data']['Y_Local'][len_X] - Y) < maxSeparation):
-                    indexPoint = trackDGPS[0]['data']['ToD'].index(timeStampt)
-                    sizeArray = len(track['data']['ToD'])
-                    track['data']['ToDDGPS'] = trackDGPS[0]['data']['ToD'][indexPoint:indexPoint+sizeArray]
-                    track['data']['LatDGPS'] = trackDGPS[0]['data']['Lat'][indexPoint:indexPoint+sizeArray]
-                    track['data']['LonDGPS'] = trackDGPS[0]['data']['Lon'][indexPoint:indexPoint+sizeArray]
-                    track['data']['X_UTM_DGPS'] = trackDGPS[0]['data']['X_UTM'][indexPoint:indexPoint+sizeArray]
-                    track['data']['Y_UTM_DGPS'] = trackDGPS[0]['data']['Y_UTM'][indexPoint:indexPoint+sizeArray]
-                    track['data']['X_LocalDGPS'] = trackDGPS[0]['data']['X_Local'][indexPoint:indexPoint+sizeArray]
-                    track['data']['Y_LocalDGPS'] = trackDGPS[0]['data']['Y_Local'][indexPoint:indexPoint+sizeArray]
-                    trackListOutput.append(track)
-                    break
-    return trackListOutput
+        #     if abs(track['data']['ToD'][0] - timeStampt) < maxTimeOffset:
+        #         if True:  #(abs(track['data']['X_Local'][len_X] - X) < maxSeparation) and \
+        #             #(abs(track['data']['Y_Local'][len_X] - Y) < maxSeparation):
+        #             indexPoint = trackDGPS[0]['data']['ToD'].index(timeStampt)
+        #             sizeArray = len(track['data']['ToD'])
+        #             track['data']['ToDDGPS'] = trackDGPS[0]['data']['ToD'][indexPoint:indexPoint+sizeArray]
+        #             track['data']['LatDGPS'] = trackDGPS[0]['data']['Lat'][indexPoint:indexPoint+sizeArray]
+        #             track['data']['LonDGPS'] = trackDGPS[0]['data']['Lon'][indexPoint:indexPoint+sizeArray]
+        #             track['data']['X_UTM_DGPS'] = trackDGPS[0]['data']['X_UTM'][indexPoint:indexPoint+sizeArray]
+        #             track['data']['Y_UTM_DGPS'] = trackDGPS[0]['data']['Y_UTM'][indexPoint:indexPoint+sizeArray]
+        #             track['data']['X_LocalDGPS'] = trackDGPS[0]['data']['X_Local'][indexPoint:indexPoint+sizeArray]
+        #             track['data']['Y_LocalDGPS'] = trackDGPS[0]['data']['Y_Local'][indexPoint:indexPoint+sizeArray]
+        #             trackListOutput.append(track)
+        #             break
+                    return trackListOutput
 
 def main():
 
