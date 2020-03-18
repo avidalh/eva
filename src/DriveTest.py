@@ -485,37 +485,59 @@ def objectCorrelator(trackList, tracksDGPS):
 
     '''
     maxTimeOffset = 0.5
-    maxSeparation = 100
+    maxSeparation = 3
     trackListOutput = []
 
     for trackDGPS in tracksDGPS:
         for track in trackList:
             for i in range(len(trackDGPS['data']['ToD'])):
                 for j in range(len(track['data']['ToD'])):
+                    ToD_DGPS = []
+                    LatDGPS = []
+                    LonDGPS = []
+                    X_UTM_DGPS = []
+                    Y_UTM_DGPS = []
+                    X_Local_DGPS = []
+                    Y_Local_DGPS = []
                     if abs(trackDGPS['data']['ToD'][i] - track['data']['ToD'][j]) < maxTimeOffset:
-                        print()
+                        if track['data']['X_Local'][j] != None:
+                            if abs(trackDGPS['data']['X_Local'][i] - track['data']['X_Local'][j]) < maxSeparation:
+                                if abs(trackDGPS['data']['Y_Local'][i] - track['data']['Y_Local'][j]) < maxSeparation:
+                                    ToD_DGPS.append(trackDGPS['data']['ToD'][i])
+                                    LatDGPS.append(trackDGPS['data']['Lat'][i])
+                                    LonDGPS.append(trackDGPS['data']['Lon'][i])
+                                    X_UTM_DGPS.append(trackDGPS['data']['X_UTM'][i])
+                                    Y_UTM_DGPS.append(trackDGPS['data']['Y_UTM'][i])
+                                    X_Local_DGPS.append(trackDGPS['data']['X_Local'][i])
+                                    Y_Local_DGPS.append(trackDGPS['data']['Y_Local'][i])
+                        else:
+                            ToD_DGPS.append(None)
+                            LatDGPS.append(None)
+                            LonDGPS.append(None)
+                            X_UTM_DGPS.append(None)
+                            Y_UTM_DGPS.append(None)
+                            X_Local_DGPS.append(None)
+                            Y_Local_DGPS.append(None)
+                    else:
+                        ToD_DGPS.append(None)
+                        LatDGPS.append(None)
+                        LonDGPS.append(None)
+                        X_UTM_DGPS.append(None)
+                        Y_UTM_DGPS.append(None)
+                        X_Local_DGPS.append(None)
+                        Y_Local_DGPS.append(None)
 
-        # for points in trackDGPS:
-        # len_X = int(len(track['data']['X_Local'])/2)
-        # if len_X < 2:
-        #     break
-        # for timeStampt, X, Y in zip(trackDGPS[0]['data']['ToD'], trackDGPS[0]['data']['X_Local'], trackDGPS[0]['data']['Y_Local']):
-            
-        #     if abs(track['data']['ToD'][0] - timeStampt) < maxTimeOffset:
-        #         if True:  #(abs(track['data']['X_Local'][len_X] - X) < maxSeparation) and \
-        #             #(abs(track['data']['Y_Local'][len_X] - Y) < maxSeparation):
-        #             indexPoint = trackDGPS[0]['data']['ToD'].index(timeStampt)
-        #             sizeArray = len(track['data']['ToD'])
-        #             track['data']['ToDDGPS'] = trackDGPS[0]['data']['ToD'][indexPoint:indexPoint+sizeArray]
-        #             track['data']['LatDGPS'] = trackDGPS[0]['data']['Lat'][indexPoint:indexPoint+sizeArray]
-        #             track['data']['LonDGPS'] = trackDGPS[0]['data']['Lon'][indexPoint:indexPoint+sizeArray]
-        #             track['data']['X_UTM_DGPS'] = trackDGPS[0]['data']['X_UTM'][indexPoint:indexPoint+sizeArray]
-        #             track['data']['Y_UTM_DGPS'] = trackDGPS[0]['data']['Y_UTM'][indexPoint:indexPoint+sizeArray]
-        #             track['data']['X_LocalDGPS'] = trackDGPS[0]['data']['X_Local'][indexPoint:indexPoint+sizeArray]
-        #             track['data']['Y_LocalDGPS'] = trackDGPS[0]['data']['Y_Local'][indexPoint:indexPoint+sizeArray]
-        #             trackListOutput.append(track)
-        #             break
-                    return trackListOutput
+            if len(ToD_DGPS) != 0:
+                track['data']['ToDDGPS'] = ToD_DGPS
+                track['data']['LatDGPS'] = LatDGPS
+                track['data']['LonDGPS'] = LonDGPS
+                track['data']['X_UTM_DGPS'] = X_UTM_DGPS
+                track['data']['Y_UTM_DGPS'] = Y_UTM_DGPS
+                track['data']['X_Local_DGPS'] = X_Local_DGPS
+                track['data']['Y_Local_DGPS'] = Y_Local_DGPS
+                trackListOutput.append(track)
+
+    return trackListOutput
 
 def main():
 
