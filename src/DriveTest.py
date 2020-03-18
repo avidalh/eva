@@ -485,14 +485,18 @@ def objectCorrelator(trackList, trackDGPS):
 
     '''
     maxTimeOffset = 0.5
-    maxSeparation = 10
+    maxSeparation = 100
     trackListOutput = []
     for track in trackList:
         # for points in trackDGPS:
+        len_X = int(len(track['data']['X_Local'])/2)
+        if len_X < 2:
+            break
         for timeStampt, X, Y in zip(trackDGPS[0]['data']['ToD'], trackDGPS[0]['data']['X_Local'], trackDGPS[0]['data']['Y_Local']):
+            
             if abs(track['data']['ToD'][0] - timeStampt) < maxTimeOffset:
-                if (abs(track['data']['X_Local'][5]-X) < maxSeparation) and \
-                    (abs(track['data']['Y_Local'][5]-Y) < maxSeparation):
+                if True:  #(abs(track['data']['X_Local'][len_X] - X) < maxSeparation) and \
+                    #(abs(track['data']['Y_Local'][len_X] - Y) < maxSeparation):
                     indexPoint = trackDGPS[0]['data']['ToD'].index(timeStampt)
                     sizeArray = len(track['data']['ToD'])
                     track['data']['ToDDGPS'] = trackDGPS[0]['data']['ToD'][indexPoint:indexPoint+sizeArray]
@@ -508,9 +512,9 @@ def objectCorrelator(trackList, trackDGPS):
 
 def main():
 
-    asterixDecodedFile =  '/home/avidalh/Desktop/GNSS/DriveTests/SMR/20200129/200129-gcxo-230611.gps.json'
+    asterixDecodedFile =  'recordings/200129-gcxo-230611.gps.json'
     asterixDecodedFile =  'recordings/200129-gcxo-230614.gps_mike6.json'
-    #asterixDecodedFile =  '/home/avidalh/Desktop/GNSS/DriveTests/SMR/20200130/200130-gcxo-223713.gps.json'
+    #asterixDecodedFile =  'recordings/200130-gcxo-223713.gps.json'
     asterixDecodedFile =  'recordings/200130-gcxo-223713.gps.json'
     # asterixDecodedFile =  'recordings/080001.gps.json'
     
