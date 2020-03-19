@@ -223,11 +223,21 @@ def onclick(event):
     print('onpick points: ')
 
 
-def plotTrackList(trackList):
-    # plot every track
+def plotTrackList(trackList, option='corrLocal'):
+
+    if option == 'local':
+        xkey = 'X_Local'
+        ykey = 'Y_Local'
+    elif option == 'latLon':
+        xkey = 'Lon'
+        ykey = 'Lat'
+    elif option == 'corrLocal':
+        xkey = 'X_Local_DGPS'
+        ykey = 'Y_Local_DGPS'
+
     for i in range(len(trackList)):
-        plt.plot(trackList[i]['data']['X'],
-                 trackList[i]['data']['Y'],
+        plt.plot(trackList[i]['data'][xkey],
+                 trackList[i]['data'][ykey],
                  marker='^',
                  mfc='None',
                  ms=3,
@@ -241,8 +251,8 @@ def plotTrackList(trackList):
     # plot the start point of every track in green
     for t in trackList:
         try:
-            plt.plot(t['data']['X'][0],
-                     t['data']['Y'][0],
+            plt.plot(t['data'][xkey][0],
+                     t['data'][ykey][0],
                         marker='^',
                         mfc='g',
                         ms=3,
@@ -257,8 +267,8 @@ def plotTrackList(trackList):
     # plot the ending point of every track in red
     for t in trackList:
         try:
-            plt.plot(t['data']['X'][-2],
-                     t['data']['Y'][-2],
+            plt.plot(t['data'][xkey][-2],
+                     t['data'][ykey][-2],
                         marker='^',
                         mfc='r',
                         ms=3,
@@ -370,19 +380,24 @@ def plotTrackListLatLon(trackList):
             continue
 
 
-def plotTrackDGPS(trackList, coordLocal=True):
+def plotTrackDGPS(trackList, option='local'):
     # plot every track
-    if coordLocal:
+    
+    if option == 'local':
         xkey = 'X_Local'
         ykey = 'Y_Local'
-    else:
+    elif option == 'latLon':
         xkey = 'Lon'
         ykey = 'Lat'
+    elif option == 'corrLocal':
+        xkey = 'X_Local_DGPS'
+        ykey = 'Y_Local_DGPS'
+    
     for i in range(len(trackList)):
         plt.plot(trackList[i]['data'][xkey],
                  trackList[i]['data'][ykey],
-                 marker='x',
-                 mfc='None',
+                 marker='o',
+                 mfc='grey',
                  ms=3,
                  mec='grey',
                  linestyle='-',
@@ -396,7 +411,7 @@ def plotTrackDGPS(trackList, coordLocal=True):
         try:
             plt.plot(t['data'][xkey][0],
                      t['data'][ykey][0],
-                        marker='x',
+                        marker='o',
                         mfc='grey',
                         ms=3,
                         mec='grey',
@@ -495,17 +510,24 @@ def objectCorrelator(trackList, tracksDGPS):
 
             # time prefiltering
             if min(ToD_DGPS_inteval) > max(ToD_track_interval) or max(ToD_DGPS_inteval) < min(ToD_track_interval):
-                print("track not valid...")
+                # print("track not valid...")
                 continue
 
             validTrack = False
+            ToD = []
             ToD_DGPS = []
             LatDGPS = []
             LonDGPS = []
+            Lat = []
+            Lon = []
             X_UTM_DGPS = []
             Y_UTM_DGPS = []
+            X_UTM = []
+            Y_UTM = []
             X_Local_DGPS = []
             Y_Local_DGPS = []
+            X_Local = []
+            Y_Local = []
             for i in range(len(trackDGPS['data']['ToD'])):
                 for j in range(len(track['data']['ToD'])):
                     if abs(trackDGPS['data']['ToD'][i] - track['data']['ToD'][j]) < maxTimeOffset:
@@ -514,37 +536,44 @@ def objectCorrelator(trackList, tracksDGPS):
                                 if abs(trackDGPS['data']['Y_Local'][i] - track['data']['Y_Local'][j]) < maxSeparation:
                                     validTrack = True
                                     ToD_DGPS.append(trackDGPS['data']['ToD'][i])
+                                    ToD.append(track['data']['ToD'][j])
                                     LatDGPS.append(trackDGPS['data']['Lat'][i])
                                     LonDGPS.append(trackDGPS['data']['Lon'][i])
+                                    Lat.append(track['data']['Lat'][j])
+                                    Lon.append(track['data']['Lon'][j])
                                     X_UTM_DGPS.append(trackDGPS['data']['X_UTM'][i])
                                     Y_UTM_DGPS.append(trackDGPS['data']['Y_UTM'][i])
+                                    X_UTM.append(track['data']['X_UTM'][j])
+                                    Y_UTM.append(track['data']['Y_UTM'][j])
                                     X_Local_DGPS.append(trackDGPS['data']['X_Local'][i])
                                     Y_Local_DGPS.append(trackDGPS['data']['Y_Local'][i])
-                                    continue
-                                else:
-                                    ToD_DGPS.append(None)
-                                    LatDGPS.append(None)
-                                    LonDGPS.append(None)
-                                    X_UTM_DGPS.append(None)
-                                    Y_UTM_DGPS.append(None)
-                                    X_Local_DGPS.append(None)
-                                    Y_Local_DGPS.append(None)
-                            else:
-                                ToD_DGPS.append(None)
-                                LatDGPS.append(None)
-                                LonDGPS.append(None)
-                                X_UTM_DGPS.append(None)
-                                Y_UTM_DGPS.append(None)
-                                X_Local_DGPS.append(None)
-                                Y_Local_DGPS.append(None)
-                        else:
-                            ToD_DGPS.append(None)
-                            LatDGPS.append(None)
-                            LonDGPS.append(None)
-                            X_UTM_DGPS.append(None)
-                            Y_UTM_DGPS.append(None)
-                            X_Local_DGPS.append(None)
-                            Y_Local_DGPS.append(None)
+                                    X_Local.append(track['data']['X_Local'][j])
+                                    Y_Local.append(track['data']['Y_Local'][j])
+                                    # continue
+                        #         else:
+                        #             ToD_DGPS.append(None)
+                        #             LatDGPS.append(None)
+                        #             LonDGPS.append(None)
+                        #             X_UTM_DGPS.append(None)
+                        #             Y_UTM_DGPS.append(None)
+                        #             X_Local_DGPS.append(None)
+                        #             Y_Local_DGPS.append(None)
+                        #     else:
+                        #         ToD_DGPS.append(None)
+                        #         LatDGPS.append(None)
+                        #         LonDGPS.append(None)
+                        #         X_UTM_DGPS.append(None)
+                        #         Y_UTM_DGPS.append(None)
+                        #         X_Local_DGPS.append(None)
+                        #         Y_Local_DGPS.append(None)
+                        # else:
+                        #     ToD_DGPS.append(None)
+                        #     LatDGPS.append(None)
+                        #     LonDGPS.append(None)
+                        #     X_UTM_DGPS.append(None)
+                        #     Y_UTM_DGPS.append(None)
+                        #     X_Local_DGPS.append(None)
+                        #     Y_Local_DGPS.append(None)
 
             track['data']['ToDDGPS'] = ToD_DGPS
             track['data']['LatDGPS'] = LatDGPS
@@ -599,10 +628,13 @@ def main():
     ))
 
     # plotTrackListLatLon(trackList)
-    plotTrackList(trackList)
-    plotTrackListXY_calc(trackList)
-    plotTrackDGPS(trackDGPS, coordLocal=True)
-    # plotTrackDGPS(trackDGPS, coordLocal=False)
+    # plotTrackList(trackList, option='local')
+    # plotTrackListXY_calc(trackList)
+    plotTrackDGPS(trackDGPS, option='local')
+    # plotTrackDGPS(trackDGPS, option='corrLocal')
+    # plotTrackList(trackList, option='corrLocal')
+    plotTrackList(trackList, option='local')
+    
 
     plt.title('Drive Test Analysis script, file {0}'.format(asterixDecodedFile))
     plt.text(0.85, 0.95, textStr, transform=plotXY.transAxes, fontsize=10, verticalalignment='top')
