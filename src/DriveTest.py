@@ -490,6 +490,7 @@ def objectCorrelator(trackList, tracksDGPS):
 
     for trackDGPS in tracksDGPS:
         for track in trackList:
+            validTrack = False
             for i in range(len(trackDGPS['data']['ToD'])):
                 for j in range(len(track['data']['ToD'])):
                     ToD_DGPS = []
@@ -503,6 +504,7 @@ def objectCorrelator(trackList, tracksDGPS):
                         if track['data']['X_Local'][j] != None:
                             if abs(trackDGPS['data']['X_Local'][i] - track['data']['X_Local'][j]) < maxSeparation:
                                 if abs(trackDGPS['data']['Y_Local'][i] - track['data']['Y_Local'][j]) < maxSeparation:
+                                    validTrack = True
                                     ToD_DGPS.append(trackDGPS['data']['ToD'][i])
                                     LatDGPS.append(trackDGPS['data']['Lat'][i])
                                     LonDGPS.append(trackDGPS['data']['Lon'][i])
@@ -510,6 +512,23 @@ def objectCorrelator(trackList, tracksDGPS):
                                     Y_UTM_DGPS.append(trackDGPS['data']['Y_UTM'][i])
                                     X_Local_DGPS.append(trackDGPS['data']['X_Local'][i])
                                     Y_Local_DGPS.append(trackDGPS['data']['Y_Local'][i])
+                                else:
+                                    ToD_DGPS.append(None)
+                                    LatDGPS.append(None)
+                                    LonDGPS.append(None)
+                                    X_UTM_DGPS.append(None)
+                                    Y_UTM_DGPS.append(None)
+                                    X_Local_DGPS.append(None)
+                                    Y_Local_DGPS.append(None)
+                            else:
+                                ToD_DGPS.append(None)
+                                LatDGPS.append(None)
+                                LonDGPS.append(None)
+                                X_UTM_DGPS.append(None)
+                                Y_UTM_DGPS.append(None)
+                                X_Local_DGPS.append(None)
+                                Y_Local_DGPS.append(None)
+
                         else:
                             ToD_DGPS.append(None)
                             LatDGPS.append(None)
@@ -526,15 +545,16 @@ def objectCorrelator(trackList, tracksDGPS):
                         Y_UTM_DGPS.append(None)
                         X_Local_DGPS.append(None)
                         Y_Local_DGPS.append(None)
+                    break
 
-            if len(ToD_DGPS) != 0:
-                track['data']['ToDDGPS'] = ToD_DGPS
-                track['data']['LatDGPS'] = LatDGPS
-                track['data']['LonDGPS'] = LonDGPS
-                track['data']['X_UTM_DGPS'] = X_UTM_DGPS
-                track['data']['Y_UTM_DGPS'] = Y_UTM_DGPS
-                track['data']['X_Local_DGPS'] = X_Local_DGPS
-                track['data']['Y_Local_DGPS'] = Y_Local_DGPS
+            track['data']['ToDDGPS'] = ToD_DGPS
+            track['data']['LatDGPS'] = LatDGPS
+            track['data']['LonDGPS'] = LonDGPS
+            track['data']['X_UTM_DGPS'] = X_UTM_DGPS
+            track['data']['Y_UTM_DGPS'] = Y_UTM_DGPS
+            track['data']['X_Local_DGPS'] = X_Local_DGPS
+            track['data']['Y_Local_DGPS'] = Y_Local_DGPS
+            if validTrack:
                 trackListOutput.append(track)
 
     return trackListOutput
