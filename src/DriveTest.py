@@ -492,6 +492,12 @@ def objectCorrelator(trackList, tracksDGPS):
         ToD_DGPS_inteval = [trackDGPS['data']['ToD'][0], trackDGPS['data']['ToD'][-1]]
         for track in trackList:
             ToD_track_interval = [track['data']['ToD'][0], track['data']['ToD'][-1]]
+
+            # time prefiltering
+            if min(ToD_DGPS_inteval) > max(ToD_track_interval) or max(ToD_DGPS_inteval) < min(ToD_track_interval):
+                print("track not valid...")
+                continue
+
             validTrack = False
             ToD_DGPS = []
             LatDGPS = []
@@ -514,6 +520,7 @@ def objectCorrelator(trackList, tracksDGPS):
                                     Y_UTM_DGPS.append(trackDGPS['data']['Y_UTM'][i])
                                     X_Local_DGPS.append(trackDGPS['data']['X_Local'][i])
                                     Y_Local_DGPS.append(trackDGPS['data']['Y_Local'][i])
+                                    continue
                                 else:
                                     ToD_DGPS.append(None)
                                     LatDGPS.append(None)
@@ -530,7 +537,14 @@ def objectCorrelator(trackList, tracksDGPS):
                                 Y_UTM_DGPS.append(None)
                                 X_Local_DGPS.append(None)
                                 Y_Local_DGPS.append(None)
-                    # break
+                        else:
+                            ToD_DGPS.append(None)
+                            LatDGPS.append(None)
+                            LonDGPS.append(None)
+                            X_UTM_DGPS.append(None)
+                            Y_UTM_DGPS.append(None)
+                            X_Local_DGPS.append(None)
+                            Y_Local_DGPS.append(None)
 
             track['data']['ToDDGPS'] = ToD_DGPS
             track['data']['LatDGPS'] = LatDGPS
@@ -543,6 +557,7 @@ def objectCorrelator(trackList, tracksDGPS):
                 trackListOutput.append(track)
 
     return trackListOutput
+
 
 def main():
 
