@@ -370,9 +370,9 @@ def plotTrackListLatLon(trackList):
             continue
 
 
-def plotTrackDGPS(trackList, UTM=True):
+def plotTrackDGPS(trackList, coordLocal=True):
     # plot every track
-    if UTM:
+    if coordLocal:
         xkey = 'X_Local'
         ykey = 'Y_Local'
     else:
@@ -485,21 +485,23 @@ def objectCorrelator(trackList, tracksDGPS):
 
     '''
     maxTimeOffset = 0.5
-    maxSeparation = 3
+    maxSeparation = 30
     trackListOutput = []
 
     for trackDGPS in tracksDGPS:
+        ToD_DGPS_inteval = [trackDGPS['data']['ToD'][0], trackDGPS['data']['ToD'][-1]]
         for track in trackList:
+            ToD_track_interval = [track['data']['ToD'][0], track['data']['ToD'][-1]]
             validTrack = False
+            ToD_DGPS = []
+            LatDGPS = []
+            LonDGPS = []
+            X_UTM_DGPS = []
+            Y_UTM_DGPS = []
+            X_Local_DGPS = []
+            Y_Local_DGPS = []
             for i in range(len(trackDGPS['data']['ToD'])):
                 for j in range(len(track['data']['ToD'])):
-                    ToD_DGPS = []
-                    LatDGPS = []
-                    LonDGPS = []
-                    X_UTM_DGPS = []
-                    Y_UTM_DGPS = []
-                    X_Local_DGPS = []
-                    Y_Local_DGPS = []
                     if abs(trackDGPS['data']['ToD'][i] - track['data']['ToD'][j]) < maxTimeOffset:
                         if track['data']['X_Local'][j] != None:
                             if abs(trackDGPS['data']['X_Local'][i] - track['data']['X_Local'][j]) < maxSeparation:
@@ -528,24 +530,7 @@ def objectCorrelator(trackList, tracksDGPS):
                                 Y_UTM_DGPS.append(None)
                                 X_Local_DGPS.append(None)
                                 Y_Local_DGPS.append(None)
-
-                        else:
-                            ToD_DGPS.append(None)
-                            LatDGPS.append(None)
-                            LonDGPS.append(None)
-                            X_UTM_DGPS.append(None)
-                            Y_UTM_DGPS.append(None)
-                            X_Local_DGPS.append(None)
-                            Y_Local_DGPS.append(None)
-                    else:
-                        ToD_DGPS.append(None)
-                        LatDGPS.append(None)
-                        LonDGPS.append(None)
-                        X_UTM_DGPS.append(None)
-                        Y_UTM_DGPS.append(None)
-                        X_Local_DGPS.append(None)
-                        Y_Local_DGPS.append(None)
-                    break
+                    # break
 
             track['data']['ToDDGPS'] = ToD_DGPS
             track['data']['LatDGPS'] = LatDGPS
@@ -601,8 +586,8 @@ def main():
     # plotTrackListLatLon(trackList)
     plotTrackList(trackList)
     plotTrackListXY_calc(trackList)
-    plotTrackDGPS(trackDGPS, UTM=True)
-    plotTrackDGPS(trackDGPS, UTM=False)
+    plotTrackDGPS(trackDGPS, coordLocal=True)
+    # plotTrackDGPS(trackDGPS, coordLocal=False)
 
     plt.title('Drive Test Analysis script, file {0}'.format(asterixDecodedFile))
     plt.text(0.85, 0.95, textStr, transform=plotXY.transAxes, fontsize=10, verticalalignment='top')
