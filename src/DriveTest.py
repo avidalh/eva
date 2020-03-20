@@ -544,7 +544,7 @@ def objectCorrelator(trackList, tracksDGPS):
 
     '''
     maxTimeOffset = 0.5
-    maxSeparation = 8
+    maxSeparation = 30
     trackListOutput = []
 
     for trackDGPS in tracksDGPS:
@@ -574,6 +574,7 @@ def objectCorrelator(trackList, tracksDGPS):
             Y_Local = []
             X_Local_DGPS_adjusted = []
             Y_Local_DGPS_adjusted = []
+            gapCounter = 0
             for i in range(len(trackDGPS['data']['ToD'])):
                 for j in range(len(track['data']['ToD'])):
                     if abs(trackDGPS['data']['ToD'][i] - track['data']['ToD'][j]) < maxTimeOffset:
@@ -607,30 +608,12 @@ def objectCorrelator(trackList, tracksDGPS):
                                     Y_Local.append(track['data']['Y_Local'][j])
 
                                     # continue
-                        #         else:
-                        #             ToD_DGPS.append(None)
-                        #             LatDGPS.append(None)
-                        #             LonDGPS.append(None)
-                        #             X_UTM_DGPS.append(None)
-                        #             Y_UTM_DGPS.append(None)
-                        #             X_Local_DGPS.append(None)
-                        #             Y_Local_DGPS.append(None)
-                        #     else:
-                        #         ToD_DGPS.append(None)
-                        #         LatDGPS.append(None)
-                        #         LonDGPS.append(None)
-                        #         X_UTM_DGPS.append(None)
-                        #         Y_UTM_DGPS.append(None)
-                        #         X_Local_DGPS.append(None)
-                        #         Y_Local_DGPS.append(None)
-                        # else:
-                        #     ToD_DGPS.append(None)
-                        #     LatDGPS.append(None)
-                        #     LonDGPS.append(None)
-                        #     X_UTM_DGPS.append(None)
-                        #     Y_UTM_DGPS.append(None)
-                        #     X_Local_DGPS.append(None)
-                        #     Y_Local_DGPS.append(None)
+                                else:
+                                    gapCounter += 1
+                            else:
+                                gapCounter += 1
+                        else:
+                            gapCounter += 1
 
             track['data']['ToDDGPS'] = ToD_DGPS
             track['data']['ToD'] = ToD
@@ -649,23 +632,27 @@ def objectCorrelator(trackList, tracksDGPS):
             track['data']['X_Local_DGPS_adjusted'] = X_Local_DGPS_adjusted
             track['data']['Y_Local_DGPS_adjusted'] = Y_Local_DGPS_adjusted
 
+            # check if the track is valid with not many gaps...
             if validTrack:
-                trackListOutput.append(track)
+                # print(gapCounter)
+                if gapCounter <= 0.1 * len(track['data']['X_Local_DGPS_adjusted']):
+                    trackListOutput.append(track)
 
     return trackListOutput
 
 
 def main():
 
-    asterixDecodedFile =  'recordings/200129-gcxo-230611.gps.json'
-    asterixDecodedFile =  'recordings/200129-gcxo-230614.gps_mike6.json'
+    asterixDecodedFile =  'recordings/200129-gcxo-230611.gps.json'  # smr
+    asterixDecodedFile =  'recordings/200129-gcxo-230614.gps.json'  # smr
+    #asterixDecodedFile =  'recordings/200129-gcxo-230614.gps_mike6.json'  # mlat
+    asterixDecodedFile =  'recordings/200130-gcxo-223716.gps_mike5.json'  # mlat
     #asterixDecodedFile =  'recordings/200130-gcxo-223713.gps.json'
-    asterixDecodedFile =  'recordings/200130-gcxo-223713.gps.json'
     # asterixDecodedFile =  'recordings/080001.gps.json'
     
     DGPStrackFile = 'recordings/20200130.cst'
+    # DGPStrackFile = 'recordings/20200130.cst'
     # DGPStrackFile = 'recordings/20140220.txt'
-
 
     trackList, trackIndices = readFile(asterixDecodedFile)
     trackDGPS = readDGPSfile(DGPStrackFile)
