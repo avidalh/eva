@@ -251,6 +251,14 @@ def plotTrackList(trackList, option='corrLocal'):
                  mew=.5,
                  pickradius=5,
                  picker=None)
+
+    # for j in range(len(trackList)):
+    #     for i in range(len(trackList[j]['data']['ToD'])):
+    #         plt.text(trackList[j]['data'][xkey][i],
+    #                 trackList[j]['data'][ykey][i],
+    #                 int(trackList[j]['data']['ToD'][i]),
+    #                 fontsize=5)
+
     # plot the start point of every track in green
     for t in trackList:
         try:
@@ -383,6 +391,39 @@ def plotTrackListLatLon(trackList):
             continue
 
 
+def plotTrackDGPS_adjusted(trackList):
+    for i in range(len(trackList)):
+        plt.plot(trackList[i]['data']['X_Local_DGPS_adjusted'],
+                 trackList[i]['data']['Y_Local_DGPS_adjusted'],
+                 marker='^',
+                 mfc='grey',
+                 ms=3,
+                 mec='grey',
+                 linestyle='-',
+                 lw=.0,
+                 color='grey',
+                 mew=.5,
+                 pickradius=5,
+                 picker=None)
+
+
+def plotErrorLines(trackList):
+    for i in range(len(trackList)):
+        for j in range(len(trackList[i]['data']['X_Local'])):
+            plt.plot([trackList[i]['data']['X_Local'][j], trackList[i]['data']['X_Local_DGPS_adjusted'][j]],
+                     [trackList[i]['data']['Y_Local'][j], trackList[i]['data']['Y_Local_DGPS_adjusted'][j]],
+                     marker='^',
+                     mfc='grey',
+                     ms=0,
+                     mec='grey',
+                     linestyle='-',
+                     lw=.3,
+                     color='r',
+                     mew=.5,
+                     pickradius=5,
+                     picker=None)
+
+
 def plotTrackDGPS(trackList, option='local'):
     # plot every track
     
@@ -400,7 +441,7 @@ def plotTrackDGPS(trackList, option='local'):
         plt.plot(trackList[i]['data'][xkey],
                  trackList[i]['data'][ykey],
                  marker='o',
-                 mfc='grey',
+                 mfc='w',
                  ms=3,
                  mec='grey',
                  linestyle='-',
@@ -414,10 +455,10 @@ def plotTrackDGPS(trackList, option='local'):
         try:
             plt.plot(t['data'][xkey][0],
                      t['data'][ykey][0],
-                        marker='o',
-                        mfc='grey',
-                        ms=3,
-                        mec='grey',
+                        marker='x',
+                        mfc='g',
+                        ms=6,
+                        mec='g',
                         linestyle='-',
                         lw=.7,
                         color='grey',
@@ -430,9 +471,9 @@ def plotTrackDGPS(trackList, option='local'):
         try:
             plt.plot(t['data'][xkey][-2],
                      t['data'][ykey][-2],
-                        marker='^',
+                        marker='x',
                         mfc='r',
-                        ms=3,
+                        ms=6,
                         mec='r',
                         linestyle='-',
                         lw=.7,
@@ -503,7 +544,7 @@ def objectCorrelator(trackList, tracksDGPS):
 
     '''
     maxTimeOffset = 0.5
-    maxSeparation = 30
+    maxSeparation = 8
     trackListOutput = []
 
     for trackDGPS in tracksDGPS:
@@ -660,7 +701,8 @@ def main():
     # plotTrackDGPS(trackDGPS, option='corrLocal')
     # plotTrackList(trackList, option='corrLocal')
     plotTrackList(trackList, option='local')
-    plotTrackList(trackList, option='local_adjusted')
+    plotTrackDGPS_adjusted(trackList)
+    plotErrorLines(trackList)
     
 
     plt.title('Drive Test Analysis script, file {0}'.format(asterixDecodedFile))
