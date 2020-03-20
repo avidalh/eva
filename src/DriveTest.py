@@ -234,6 +234,9 @@ def plotTrackList(trackList, option='corrLocal'):
     elif option == 'corrLocal':
         xkey = 'X_Local_DGPS'
         ykey = 'Y_Local_DGPS'
+    elif option == 'local_adjusted':
+        xkey = 'X_Local_DGPS_adjusted'
+        ykey = 'Y_Local_DGPS_adjusted'
 
     for i in range(len(trackList)):
         plt.plot(trackList[i]['data'][xkey],
@@ -528,6 +531,8 @@ def objectCorrelator(trackList, tracksDGPS):
             Y_Local_DGPS = []
             X_Local = []
             Y_Local = []
+            X_Local_DGPS_adjusted = []
+            Y_Local_DGPS_adjusted = []
             for i in range(len(trackDGPS['data']['ToD'])):
                 for j in range(len(track['data']['ToD'])):
                     if abs(trackDGPS['data']['ToD'][i] - track['data']['ToD'][j]) < maxTimeOffset:
@@ -535,6 +540,16 @@ def objectCorrelator(trackList, tracksDGPS):
                             if abs(trackDGPS['data']['X_Local'][i] - track['data']['X_Local'][j]) < maxSeparation:
                                 if abs(trackDGPS['data']['Y_Local'][i] - track['data']['Y_Local'][j]) < maxSeparation:
                                     validTrack = True
+
+                                    deltaX = trackDGPS['data']['X_Local'][i+1] - trackDGPS['data']['X_Local'][i]
+                                    deltaY = trackDGPS['data']['Y_Local'][i+1] - trackDGPS['data']['Y_Local'][i]
+                                    sampleTime = trackDGPS['data']['ToD'][i+1] - trackDGPS['data']['ToD'][i]
+                                    Vx = deltaX / sampleTime
+                                    Vy = deltaY / sampleTime
+                                    deltaTime = abs(trackDGPS['data']['ToD'][i] - track['data']['ToD'][j])
+
+                                    X_Local_DGPS_adjusted.append(Vx * deltaTime + trackDGPS['data']['X_Local'][i])
+                                    Y_Local_DGPS_adjusted.append(Vy * deltaTime + trackDGPS['data']['Y_Local'][i])
                                     ToD_DGPS.append(trackDGPS['data']['ToD'][i])
                                     ToD.append(track['data']['ToD'][j])
                                     LatDGPS.append(trackDGPS['data']['Lat'][i])
@@ -549,6 +564,7 @@ def objectCorrelator(trackList, tracksDGPS):
                                     Y_Local_DGPS.append(trackDGPS['data']['Y_Local'][i])
                                     X_Local.append(track['data']['X_Local'][j])
                                     Y_Local.append(track['data']['Y_Local'][j])
+
                                     # continue
                         #         else:
                         #             ToD_DGPS.append(None)
@@ -576,12 +592,22 @@ def objectCorrelator(trackList, tracksDGPS):
                         #     Y_Local_DGPS.append(None)
 
             track['data']['ToDDGPS'] = ToD_DGPS
+            track['data']['ToD'] = ToD
             track['data']['LatDGPS'] = LatDGPS
             track['data']['LonDGPS'] = LonDGPS
+            track['data']['Lat'] = Lat
+            track['data']['Lon'] = Lon
             track['data']['X_UTM_DGPS'] = X_UTM_DGPS
             track['data']['Y_UTM_DGPS'] = Y_UTM_DGPS
+            track['data']['X_UTM'] = X_UTM
+            track['data']['Y_UTM'] = Y_UTM
             track['data']['X_Local_DGPS'] = X_Local_DGPS
             track['data']['Y_Local_DGPS'] = Y_Local_DGPS
+            track['data']['X_Local'] = X_Local
+            track['data']['Y_Local'] = Y_Local
+            track['data']['X_Local_DGPS_adjusted'] = X_Local_DGPS_adjusted
+            track['data']['Y_Local_DGPS_adjusted'] = Y_Local_DGPS_adjusted
+
             if validTrack:
                 trackListOutput.append(track)
 
@@ -634,6 +660,7 @@ def main():
     # plotTrackDGPS(trackDGPS, option='corrLocal')
     # plotTrackList(trackList, option='corrLocal')
     plotTrackList(trackList, option='local')
+    plotTrackList(trackList, option='local_adjusted')
     
 
     plt.title('Drive Test Analysis script, file {0}'.format(asterixDecodedFile))
