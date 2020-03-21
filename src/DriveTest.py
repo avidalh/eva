@@ -5,7 +5,8 @@ import time
 import csv
 from CoordConv import CoordTranslator
 import math
-from scipy.interpolate import interp1d
+# from scipy.interpolate import interp1d
+import statistics
 
 
 def readFile(fileName):
@@ -397,10 +398,10 @@ def plotTrackDGPS_adjusted(trackList):
     for i in range(len(trackList)):
         plt.plot(trackList[i]['data']['X_Local_DGPS_adjusted'],
                  trackList[i]['data']['Y_Local_DGPS_adjusted'],
-                 marker='^',
-                 mfc='grey',
-                 ms=3,
-                 mec='grey',
+                 marker='+',
+                 mfc='k',
+                 ms=5,
+                 mec='k',
                  linestyle='-',
                  lw=.0,
                  color='grey',
@@ -550,13 +551,15 @@ def objectCorrelator(trackList, tracksDGPS):
     trackListOutput = []
 
     for trackDGPS in tracksDGPS:
-        ToD_DGPS_inteval = [trackDGPS['data']['ToD'][0], trackDGPS['data']['ToD'][-1]]
+        ToD_DGPS_interval = [trackDGPS['data']['ToD'][0], trackDGPS['data']['ToD'][-1]]
         for track in trackList:
             ToD_track_interval = [track['data']['ToD'][0], track['data']['ToD'][-1]]
 
             # time prefiltering
-            if min(ToD_DGPS_inteval) > max(ToD_track_interval) or max(ToD_DGPS_inteval) < min(ToD_track_interval):
-                # print("track not valid...")
+            if ToD_DGPS_interval[1] < ToD_DGPS_interval[0]:
+                ToD_DGPS_interval = [0, 86400]
+            if min(ToD_DGPS_interval) > max(ToD_track_interval) or max(ToD_DGPS_interval) < min(ToD_track_interval):
+                print("track not valid...", ToD_DGPS_interval, ToD_track_interval)
                 continue
 
             validTrack = False
@@ -576,7 +579,13 @@ def objectCorrelator(trackList, tracksDGPS):
             Y_Local = []
             X_Local_DGPS_adjusted = []
             Y_Local_DGPS_adjusted = []
+            error_X = []
+            error_Y = []
+            error_rho = []
+            error_theta = []
+            error_RMSE = []
             gapCounter = 0
+
             for i in range(len(trackDGPS['data']['ToD'])):
                 for j in range(len(track['data']['ToD'])):
                     if abs(trackDGPS['data']['ToD'][i] - track['data']['ToD'][j]) < maxTimeOffset:
@@ -591,9 +600,11 @@ def objectCorrelator(trackList, tracksDGPS):
                                     Vx = deltaX / sampleTime
                                     Vy = deltaY / sampleTime
                                     deltaTime = abs(trackDGPS['data']['ToD'][i] - track['data']['ToD'][j])
-
                                     X_Local_DGPS_adjusted.append(Vx * deltaTime + trackDGPS['data']['X_Local'][i])
                                     Y_Local_DGPS_adjusted.append(Vy * deltaTime + trackDGPS['data']['Y_Local'][i])
+                                    
+                                    
+                                    
                                     ToD_DGPS.append(trackDGPS['data']['ToD'][i])
                                     ToD.append(track['data']['ToD'][j])
                                     LatDGPS.append(trackDGPS['data']['Lat'][i])
@@ -608,6 +619,10 @@ def objectCorrelator(trackList, tracksDGPS):
                                     Y_Local_DGPS.append(trackDGPS['data']['Y_Local'][i])
                                     X_Local.append(track['data']['X_Local'][j])
                                     Y_Local.append(track['data']['Y_Local'][j])
+
+                                    error_X.append(X_Local_DGPS_adjusted[-1] - X_Local[-1])
+                                    error_Y.append(Y_Local_DGPS_adjusted[-1] - Y_Local[-1])
+                                    error_RMSE.append(math.sqrt(error_X[-1]*error_X[-1] + error_Y[-1]*error_Y[-1]))
 
                                     # continue
                                 else:
@@ -633,6 +648,9 @@ def objectCorrelator(trackList, tracksDGPS):
             track['data']['Y_Local'] = Y_Local
             track['data']['X_Local_DGPS_adjusted'] = X_Local_DGPS_adjusted
             track['data']['Y_Local_DGPS_adjusted'] = Y_Local_DGPS_adjusted
+            track['data']['error_X'] = error_X
+            track['data']['error_Y'] = error_Y
+            track['data']['error_RMSE'] = error_RMSE           
 
             # check if the track is valid with not many gaps...
             if validTrack:
@@ -647,19 +665,30 @@ def main():
 
     asterixDecodedFile =  'recordings/200129-gcxo-230611.gps.json'  # smr
     asterixDecodedFile =  'recordings/200129-gcxo-230614.gps.json'  # smr
-    #asterixDecodedFile =  'recordings/200129-gcxo-230614.gps_mike6.json'  # mlat
+    # asterixDecodedFile =  'recordings/200129-gcxo-230614.gps_mike6.json'  # mlat
     asterixDecodedFile =  'recordings/200130-gcxo-223716.gps_mike5.json'  # mlat
-    #asterixDecodedFile =  'recordings/200130-gcxo-223713.gps.json'
-    #asterixDecodedFile =  'recordings/080001.gps.json'
+    # asterixDecodedFile =  'recordings/200130-gcxo-223713.gps.json'
+    # asterixDecodedFile =  'recordings/080001.gps.json'
     
-    DGPStrackFile = 'recordings/20200130.cst'
     # DGPStrackFile = 'recordings/20200130.cst'
+    DGPStrackFile = 'recordings/20200130.cst'
     # DGPStrackFile = 'recordings/20140220.txt'
 
     trackList, trackIndices = readFile(asterixDecodedFile)
-    trackDGPS = readDGPSfile(DGPStrackFile)
+    tracksDGPS = readDGPSfile(DGPStrackFile)
 
-    trackList = objectCorrelator(trackList, trackDGPS)
+    trackList = objectCorrelator(trackList, tracksDGPS)
+    
+    emx = []
+    emy = []
+    ermse = []
+    for track in trackList:
+        emx.append(statistics.mean(track['data']['error_X']))
+        emy.append(statistics.mean(track['data']['error_Y']))
+        ermse.append(statistics.mean(track['data']['error_RMSE']))
+    print('mean error X: ', statistics.mean(emx))
+    print('mean error Y: ', statistics.mean(emy))
+    print('mean error RMSE: ', statistics.mean(ermse))
 
     #plotSizeHist(trackList)
 
@@ -686,7 +715,7 @@ def main():
     # plotTrackListLatLon(trackList)
     # plotTrackList(trackList, option='local')
     # plotTrackListXY_calc(trackList)
-    plotTrackDGPS(trackDGPS, option='local')
+    plotTrackDGPS(tracksDGPS, option='local')
     # plotTrackDGPS(trackDGPS, option='corrLocal')
     # plotTrackList(trackList, option='corrLocal')
     plotTrackList(trackList, option='local')
