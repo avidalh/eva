@@ -255,12 +255,12 @@ def plotTrackList(trackList, option='corrLocal'):
                  pickradius=5,
                  picker=None)
 
-    # for j in range(len(trackList)):
-    #     for i in range(len(trackList[j]['data']['ToD'])):
-    #         plt.text(trackList[j]['data'][xkey][i],
-    #                 trackList[j]['data'][ykey][i],
-    #                 int(trackList[j]['data']['ToD'][i]),
-    #                 fontsize=5)
+    for j in range(len(trackList)):
+        for i in range(0, len(trackList[j]['data']['ToD']), 5):
+            plt.text(trackList[j]['data'][xkey][i],
+                    trackList[j]['data'][ykey][i],
+                    str(int(trackList[j]['data']['ToD'][i]))[-2:],
+                    fontsize=5)
 
     # plot the start point of every track in green
     for t in trackList:
