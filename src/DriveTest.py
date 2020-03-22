@@ -668,11 +668,11 @@ def main():
     # asterixDecodedFile =  'recordings/200129-gcxo-230614.gps_mike6.json'  # mlat
     # asterixDecodedFile =  'recordings/200130-gcxo-223716.gps_mike5.json'  # mlat
     asterixDecodedFile =  'recordings/200130-gcxo-223713.gps.json'
-    asterixDecodedFile =  'recordings/080001.gps.json'
+    # asterixDecodedFile =  'recordings/080001.gps.json'
     
     # DGPStrackFile = 'recordings/20200129.cst'
-    # DGPStrackFile = 'recordings/20200130.cst'
-    DGPStrackFile = 'recordings/20140220.txt'
+    DGPStrackFile = 'recordings/20200130.cst'
+    # DGPStrackFile = 'recordings/20140220.txt'
 
     trackList, trackIndices = readFile(asterixDecodedFile)
     tracksDGPS = readDGPSfile(DGPStrackFile)
