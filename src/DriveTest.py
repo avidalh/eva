@@ -664,46 +664,50 @@ def objectCorrelator(trackList, tracksDGPS):
 def main():
 
     asterixDecodedFile =  'recordings/200129-gcxo-230611.gps.json'  # smr
-    asterixDecodedFile =  'recordings/200129-gcxo-230614.gps.json'  # smr
+    # asterixDecodedFile =  'recordings/200129-gcxo-230614.gps.json'  # smr
     # asterixDecodedFile =  'recordings/200129-gcxo-230614.gps_mike6.json'  # mlat
-    asterixDecodedFile =  'recordings/200130-gcxo-223716.gps_mike5.json'  # mlat
-    # asterixDecodedFile =  'recordings/200130-gcxo-223713.gps.json'
-    # asterixDecodedFile =  'recordings/080001.gps.json'
+    # asterixDecodedFile =  'recordings/200130-gcxo-223716.gps_mike5.json'  # mlat
+    asterixDecodedFile =  'recordings/200130-gcxo-223713.gps.json'
+    asterixDecodedFile =  'recordings/080001.gps.json'
     
+    # DGPStrackFile = 'recordings/20200129.cst'
     # DGPStrackFile = 'recordings/20200130.cst'
-    DGPStrackFile = 'recordings/20200130.cst'
-    # DGPStrackFile = 'recordings/20140220.txt'
+    DGPStrackFile = 'recordings/20140220.txt'
 
     trackList, trackIndices = readFile(asterixDecodedFile)
     tracksDGPS = readDGPSfile(DGPStrackFile)
 
     trackList = objectCorrelator(trackList, tracksDGPS)
     
+    # TODO: implement in a function:
     emx = []
     emy = []
     ermse = []
-    for track in trackList:
-        emx.append(statistics.mean(track['data']['error_X']))
-        emy.append(statistics.mean(track['data']['error_Y']))
-        ermse.append(statistics.mean(track['data']['error_RMSE']))
-    print('mean error X: ', statistics.mean(emx))
-    print('mean error Y: ', statistics.mean(emy))
-    print('mean error RMSE: ', statistics.mean(ermse))
+    try:
+        for track in trackList:
+            emx.append(statistics.mean(track['data']['error_X']))
+            emy.append(statistics.mean(track['data']['error_Y']))
+            ermse.append(statistics.mean(track['data']['error_RMSE']))
+        print('mean error X: ', statistics.mean(emx))
+        print('mean error Y: ', statistics.mean(emy))
+        print('mean error RMSE: ', statistics.mean(ermse))
+    except:
+        print()
 
     #plotSizeHist(trackList)
 
     inches = 16
+
+    
+
     fig, plotXY = plt.subplots(1, 1, figsize=(inches, inches/1.7778), frameon=True)
-
+    
     cid = fig.canvas.mpl_connect('button_press_event', onclick)
-
-    j = 0
-    plotList = []
 
     maxSize = 70
 
     trackListBig = getBiggest(trackList, trackIndices, maxSize)
-    totalTracks, totalPlots, totalMissed, totalBig, trackListMiss= calcStats(trackList, trackIndices, trackListBig, maxSize)
+    totalTracks, totalPlots, totalMissed, totalBig, trackListMiss = calcStats(trackList, trackIndices, trackListBig, maxSize)
     textStr = '\n'.join((
         r'$Tracks: %2d$' % (totalTracks),
         r'$Plots: %2d$' % (totalPlots),
@@ -720,8 +724,6 @@ def main():
     # plotTrackList(trackList, option='corrLocal')
     plotTrackList(trackList, option='local')
     plotTrackDGPS_adjusted(trackList)
-    plotErrorLines(trackList)
-    
 
     plt.title('Drive Test Analysis script, file {0}'.format(asterixDecodedFile))
     plt.text(0.85, 0.95, textStr, transform=plotXY.transAxes, fontsize=10, verticalalignment='top')
@@ -732,7 +734,38 @@ def main():
     # plt.ylim([-250, 1350])
     # plt.xlim([-2700, 1000])
     plt.autoscale(enable=False)
+    plotErrorLines(trackList)
+    
+    fig2, hist = plt.subplots(2, 3, figsize=(inches, inches/1.7778), frameon=True)
+    
+    errorArrayX = []
+    for track in trackList:
+        errorArrayX += track['data']['error_X'][:]
+    hist[0, 0].hist(errorArrayX, bins=100, density=True)
+    hist[0, 0].grid(linestyle='--', linewidth=0.5)
 
+    errorArrayY = []
+    for track in trackList:
+        errorArrayY += track['data']['error_Y'][:]
+    hist[0, 1].grid(linestyle='--', linewidth=0.5)
+    hist[0, 1].hist(errorArrayY, bins=100, density=True)
+    
+
+    errorArrayRMSE = []
+    for track in trackList:
+        errorArrayRMSE += track['data']['error_RMSE'][:]
+    hist[0, 2].hist(errorArrayRMSE, bins=100, density=True)
+    hist[0, 2].grid(linestyle='--', linewidth=0.5)
+
+    errorArray = []
+    for track in trackList:
+        errorArray += track['data']['error_RMSE'][:]
+    hist[1, 0].scatter(errorArrayX, errorArrayY, marker='o', s=30, alpha=0.2)
+    hist[1, 0].grid(linestyle='--', linewidth=0.5)
+    hist[1, 0].axis('equal')
+
+    
+    
     print("--- %s seconds ---" % (time.time() - start_time))
 
     plt.show()
