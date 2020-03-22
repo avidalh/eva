@@ -666,8 +666,8 @@ def main():
     asterixDecodedFile =  'recordings/200129-gcxo-230611.gps.json'  # smr
     # asterixDecodedFile =  'recordings/200129-gcxo-230614.gps.json'  # smr
     # asterixDecodedFile =  'recordings/200129-gcxo-230614.gps_mike6.json'  # mlat
-    # asterixDecodedFile =  'recordings/200130-gcxo-223716.gps_mike5.json'  # mlat
-    asterixDecodedFile =  'recordings/200130-gcxo-223713.gps.json'
+    asterixDecodedFile =  'recordings/200130-gcxo-223716.gps_mike5.json'  # mlat
+    # asterixDecodedFile =  'recordings/200130-gcxo-223713.gps.json'
     # asterixDecodedFile =  'recordings/080001.gps.json'
     
     # DGPStrackFile = 'recordings/20200129.cst'
@@ -741,20 +741,20 @@ def main():
     errorArrayX = []
     for track in trackList:
         errorArrayX += track['data']['error_X'][:]
-    hist[0, 0].hist(errorArrayX, bins=100, density=True)
+    hist[0, 0].hist(errorArrayX, bins=200, density=True)
     hist[0, 0].grid(linestyle='--', linewidth=0.5)
 
     errorArrayY = []
     for track in trackList:
         errorArrayY += track['data']['error_Y'][:]
     hist[0, 1].grid(linestyle='--', linewidth=0.5)
-    hist[0, 1].hist(errorArrayY, bins=100, density=True)
+    hist[0, 1].hist(errorArrayY, bins=200, density=True)
     
 
     errorArrayRMSE = []
     for track in trackList:
         errorArrayRMSE += track['data']['error_RMSE'][:]
-    hist[0, 2].hist(errorArrayRMSE, bins=100, density=True)
+    hist[0, 2].hist(errorArrayRMSE, bins=200, density=True)
     hist[0, 2].grid(linestyle='--', linewidth=0.5)
 
     errorArray = []
