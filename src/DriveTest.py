@@ -7,6 +7,8 @@ from CoordConv import CoordTranslator
 import math
 # from scipy.interpolate import interp1d
 import statistics
+# import mplcursors
+import numpy as np
 
 
 def readFile(fileName):
@@ -67,6 +69,7 @@ def readFile(fileName):
                                      'Y_UTM': [Y_UTM],
                                      'X_Local': [X_Local],
                                      'Y_Local': [Y_Local]
+                                     
                                     }
                             }
                 
@@ -112,7 +115,7 @@ def readFile(fileName):
     return trackList, trackIndices                    
 
 
-def latLon2local(coords, sensor='smr'):
+def latLon2local(coords, sensor='mlat'):
 
     smr_latlon = [28.477496, -16.332520]
     smr_height = 704.015  #helipsoid wgs84
@@ -255,12 +258,12 @@ def plotTrackList(trackList, option='corrLocal'):
                  pickradius=5,
                  picker=None)
 
-    for j in range(len(trackList)):
-        for i in range(0, len(trackList[j]['data']['ToD']), 5):
-            plt.text(trackList[j]['data'][xkey][i],
-                    trackList[j]['data'][ykey][i],
-                    str(int(trackList[j]['data']['ToD'][i]))[-2:],
-                    fontsize=5)
+    # for j in range(len(trackList)):
+    #     for i in range(0, len(trackList[j]['data']['ToD']), 5):
+    #         plt.text(trackList[j]['data'][xkey][i],
+    #                 trackList[j]['data'][ykey][i],
+    #                 str(int(trackList[j]['data']['ToD'][i]))[-2:],
+    #                 fontsize=5)
 
     # plot the start point of every track in green
     for t in trackList:
@@ -411,6 +414,10 @@ def plotTrackDGPS_adjusted(trackList):
 
 
 def plotErrorLines(trackList):
+    def map(error):
+        if error <= 7.5: return 'g'
+        if error >= 7.5 and error <= 15.0: return 'orange'
+        if error >= 15.0: return 'r'
     for i in range(len(trackList)):
         for j in range(len(trackList[i]['data']['X_Local'])):
             plt.plot([trackList[i]['data']['X_Local'][j], trackList[i]['data']['X_Local_DGPS_adjusted'][j]],
@@ -420,11 +427,11 @@ def plotErrorLines(trackList):
                      ms=0,
                      mec='grey',
                      linestyle='-',
-                     lw=.3,
-                     color='r',
+                     lw=.6,
+                     color=map(trackList[i]['data']['error_RMSE'][j]),
                      mew=.5,
                      pickradius=5,
-                     picker=None)
+                     picker=5)
 
 
 def plotTrackDGPS(trackList, option='local'):
@@ -702,7 +709,7 @@ def main():
 
     fig, plotXY = plt.subplots(1, 1, figsize=(inches, inches/1.7778), frameon=True)
     
-    cid = fig.canvas.mpl_connect('button_press_event', onclick)
+    cid = fig.canvas.mpl_connect('pick_event', onclick)
 
     maxSize = 70
 
@@ -741,30 +748,42 @@ def main():
     errorArrayX = []
     for track in trackList:
         errorArrayX += track['data']['error_X'][:]
-    hist[0, 0].hist(errorArrayX, bins=200, density=True)
-    hist[0, 0].grid(linestyle='--', linewidth=0.5)
+    e_x = np.array(errorArrayX)
+    p95 = np.percentile(e_x, 95)
+    p99 = np.percentile(e_x, 99)
 
+    hist[0, 0].hist(e_x, facecolor='k', alpha=.85, bins=500, density=True)
+    hist[0, 0].grid(linestyle='--', linewidth=0.4)
+    hist[0, 0].axvline(e_x.mean(), color='r', linestyle='dashed', linewidth=.6)
+    hist[0, 0].axvline(p95, color='r', linestyle='dashed', linewidth=.6)
+    hist[0, 0].axvline(np.percentile(e_x, 95)*-1, color='r', linestyle='dashed', linewidth=.6)
+    hist[0, 0].axvline(np.percentile(e_x, 99), color='r', linestyle='dashed', linewidth=.6)
+    hist[0, 0].axvline(np.percentile(e_x, 99)*-1, color='r', linestyle='dashed', linewidth=.6)
+
+    
     errorArrayY = []
     for track in trackList:
         errorArrayY += track['data']['error_Y'][:]
-    hist[0, 1].grid(linestyle='--', linewidth=0.5)
-    hist[0, 1].hist(errorArrayY, bins=200, density=True)
-    
+    hist[0, 1].grid(linestyle='--', linewidth=0.4)
+    hist[0, 1].hist(errorArrayY, facecolor='k', alpha=.85, bins=500, density=True)
+    e_y = np.array(errorArrayX)
 
     errorArrayRMSE = []
     for track in trackList:
         errorArrayRMSE += track['data']['error_RMSE'][:]
-    hist[0, 2].hist(errorArrayRMSE, bins=200, density=True)
-    hist[0, 2].grid(linestyle='--', linewidth=0.5)
+    n, bins, patches = hist[0, 2].hist(errorArrayRMSE, facecolor='k', alpha=.85, bins=500, density=True)
+    hist[0, 2].grid(linestyle='--', linewidth=0.4)
+    e_rmse = np.array(errorArrayX)
 
     errorArray = []
     for track in trackList:
         errorArray += track['data']['error_RMSE'][:]
-    hist[1, 0].scatter(errorArrayX, errorArrayY, marker='o', s=30, alpha=0.2)
-    hist[1, 0].grid(linestyle='--', linewidth=0.5)
+    hist[1, 0].scatter(errorArrayX, errorArrayY, c='k', marker='o', s=30, alpha=0.2)
+    hist[1, 0].grid(linestyle='--', linewidth=0.4)
     hist[1, 0].axis('equal')
+    circle99 = plt.Circle((0,0), 10, fc=None, ec='r', ls='--', fill=False, linewidth=0.6)
+    hist[1, 0].add_artist(circle99)
 
-    
     
     print("--- %s seconds ---" % (time.time() - start_time))
 
