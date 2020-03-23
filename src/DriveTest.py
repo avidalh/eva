@@ -668,6 +668,20 @@ def objectCorrelator(trackList, tracksDGPS):
     return trackListOutput
 
 
+def plotHist(figure, trackList, key='error_X', graphPos=[0, 0], title='error'):
+    error = []
+    for track in trackList:
+        error += track['data'][key][:]
+    error = np.array(error)
+    p95 = np.percentile(error, 95)
+    p99 = np.percentile(error, 99)
+    error_mean = error.mean()
+    figure[graphPos[0], graphPos[1]].hist(error, facecolor='k', alpha=.85, bins=50, density=True)
+    figure[graphPos[0], graphPos[1]].grid(linestyle='--', linewidth=0.4)
+    title = title + ', p95=' + str(p95)[:4] + ', p99=' + str(p99)[:4] + ', mean=' + str(error_mean)[:4]
+    figure[graphPos[0], graphPos[1]].set_title(title)
+
+
 def main():
 
     asterixDecodedFile =  'recordings/200129-gcxo-230611.gps.json'  # smr
@@ -744,46 +758,23 @@ def main():
     plotErrorLines(trackList)
     
     fig2, hist = plt.subplots(2, 3, figsize=(inches, inches/1.7778), frameon=True)
+    fig2.suptitle('Position errors analysis')
+
+    plotHist(hist, trackList, 'error_X', [0, 0], 'X axis error')
+    plotHist(hist, trackList, 'error_Y', [0, 1], 'Y axis error')
+    plotHist(hist, trackList, 'error_RMSE', [0, 2], 'RMSE error')
+
+    # errorArray = []
+    # for track in trackList:
+    #     errorArray += track['data']['error_RMSE'][:]
+    # hist[1, 0].scatter(errorArray, errorArrayY, c='k', marker='o', s=30, alpha=0.2)
+    # hist[1, 0].grid(linestyle='--', linewidth=0.4)
+    # hist[1, 0].axis('equal')
     
-    errorArrayX = []
-    for track in trackList:
-        errorArrayX += track['data']['error_X'][:]
-    e_x = np.array(errorArrayX)
-    p95 = np.percentile(e_x, 95)
-    p99 = np.percentile(e_x, 99)
+    # circle99 = plt.Circle((0,0), 10, fc=None, ec='r', ls='--', fill=False, linewidth=0.6)
+    # hist[1, 0].add_artist(circle99)
 
-    hist[0, 0].hist(e_x, facecolor='k', alpha=.85, bins=500, density=True)
-    hist[0, 0].grid(linestyle='--', linewidth=0.4)
-    hist[0, 0].axvline(e_x.mean(), color='r', linestyle='dashed', linewidth=.6)
-    hist[0, 0].axvline(p95, color='r', linestyle='dashed', linewidth=.6)
-    hist[0, 0].axvline(-p95, color='r', linestyle='dashed', linewidth=.6)
-    hist[0, 0].axvline(p99, color='r', linestyle='dashed', linewidth=.6)
-    hist[0, 0].axvline(-p99, color='r', linestyle='dashed', linewidth=.6)
-
-    
-    errorArrayY = []
-    for track in trackList:
-        errorArrayY += track['data']['error_Y'][:]
-    hist[0, 1].grid(linestyle='--', linewidth=0.4)
-    hist[0, 1].hist(errorArrayY, facecolor='k', alpha=.85, bins=500, density=True)
-    e_y = np.array(errorArrayX)
-
-    errorArrayRMSE = []
-    for track in trackList:
-        errorArrayRMSE += track['data']['error_RMSE'][:]
-    n, bins, patches = hist[0, 2].hist(errorArrayRMSE, facecolor='k', alpha=.85, bins=500, density=True)
-    hist[0, 2].grid(linestyle='--', linewidth=0.4)
-    e_rmse = np.array(errorArrayX)
-
-    errorArray = []
-    for track in trackList:
-        errorArray += track['data']['error_RMSE'][:]
-    hist[1, 0].scatter(errorArrayX, errorArrayY, c='k', marker='o', s=30, alpha=0.2)
-    hist[1, 0].grid(linestyle='--', linewidth=0.4)
-    hist[1, 0].axis('equal')
-    circle99 = plt.Circle((0,0), 10, fc=None, ec='r', ls='--', fill=False, linewidth=0.6)
-    hist[1, 0].add_artist(circle99)
-
+    #############################################################################################################
     
     print("--- %s seconds ---" % (time.time() - start_time))
 
