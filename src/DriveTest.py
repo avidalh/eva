@@ -756,9 +756,9 @@ def main():
     hist[0, 0].grid(linestyle='--', linewidth=0.4)
     hist[0, 0].axvline(e_x.mean(), color='r', linestyle='dashed', linewidth=.6)
     hist[0, 0].axvline(p95, color='r', linestyle='dashed', linewidth=.6)
-    hist[0, 0].axvline(np.percentile(e_x, 95)*-1, color='r', linestyle='dashed', linewidth=.6)
-    hist[0, 0].axvline(np.percentile(e_x, 99), color='r', linestyle='dashed', linewidth=.6)
-    hist[0, 0].axvline(np.percentile(e_x, 99)*-1, color='r', linestyle='dashed', linewidth=.6)
+    hist[0, 0].axvline(-p95, color='r', linestyle='dashed', linewidth=.6)
+    hist[0, 0].axvline(p99, color='r', linestyle='dashed', linewidth=.6)
+    hist[0, 0].axvline(-p99, color='r', linestyle='dashed', linewidth=.6)
 
     
     errorArrayY = []
